@@ -17,3 +17,11 @@ class Migration(migrations.Migration):
             ],
         ),
     ]
+
+    def add_example_data(apps, schema_editor):
+        ExampleModel = apps.get_model('your_app_name', 'ExampleModel')
+        ExampleModel.objects.create(name='Example Data')
+
+    operations.append(
+        migrations.RunPython(add_example_data)
+    )
