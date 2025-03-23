@@ -1,39 +1,121 @@
+// pipeline {
+//     agent any
+
+//     environment {
+//         GIT_URL = "${scm.getUserRemoteConfigs()[0].getUrl()}" // Fetch repo URL
+//         REPO_NAME = "${GIT_URL.replaceFirst(/^.*\/([^\/]+?)(\.git)?$/, '$1')}" // Extract repo name
+//         BRANCH_NAME = "${env.GIT_BRANCH}" // Extract branch name
+//     }
+
+//     stages {
+//         stage('Print Incoming Webhook Data') {
+//             steps {
+//                  script {
+//                     echo "🔹 Printing Environment Variables:"
+//                     sh 'env | sort'
+
+//                     echo "🔹 Extracted Repository Name: ${REPO_NAME}"
+//                     echo "🔹 Extracted Branch Name: ${BRANCH_NAME}"
+
+//                     // Print webhook payload if using a GitHub/GitLab trigger
+//                     if (env.JOB_NAME) {
+//                         // sh "curl -s ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json"
+//                         echo "🔹 Job Name: ${env.JOB_NAME}"
+//                     } else {
+//                         echo "❌ JOB_NAME is not set. Ensure the webhook is triggering the job correctly."
+//                     }
+//                 }
+//             }
+//         }
+            
+//         stage('Checkout') {
+//             steps {
+//                 checkout scm
+//                 script {
+//                     echo "Triggered by repository: ${REPO_NAME}"
+//                     echo "Branch: ${BRANCH_NAME}"
+//                 }
+//             }
+//         }
+
+//         stage('Validate Triggering Branch') {
+//             steps {
+//                 script {
+//                     // Define allowed branches per repository (any branch that contains 'main')
+//                     def allowedBranches = [
+//                         "jenkins-test"  : ~/.*main.*/,
+//                         "jenkins-test2" : ~/.*main.*/,
+//                         "jenkins-test3" : ~/.*main.*/
+//                     ]
+                    
+//                     if (!allowedBranches.containsKey(REPO_NAME) || !(BRANCH_NAME in allowedBranches[REPO_NAME])) {
+//                         echo "Skipping pipeline execution for repo: ${REPO_NAME}, branch: ${BRANCH_NAME}"
+//                         currentBuild.result = 'ABORTED'
+//                         error "This branch is not allowed to trigger the pipeline."
+//                     }
+//                 }
+//             }
+//         }
+
+
+//         stage('Execute Actions Based on Repo') {
+//             steps {
+//                 script {
+//                     if (REPO_NAME == "jenkins-test3") {
+//                         echo "Executing action for jenkins-test3"
+
+//                         def changes = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
+//                             def hasMigrations = changes.split('\n').any { it =~ /\/migrations\// }
+
+//                             if (hasMigrations) {
+//                                 echo "Migration files changed! Running necessary actions..."
+//                                 // Trigger database migration or any other necessary action
+//                             } else {
+//                                 echo "No migration files changed. Skipping migration step. for repo jenkins-test3"
+//                             }
+
+//                     } else if (REPO_NAME == "jenkins-test") {
+//                         echo "Executing action for jenkins-test"
+//                         def changes = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
+//                             def hasMigrations = changes.split('\n').any { it =~ /\/migrations\// }
+
+//                             if (hasMigrations) {
+//                                 echo "Migration files changed! Running necessary actions..."
+//                                 // Trigger database migration or any other necessary action
+//                             } else {
+//                                 echo "No migration files changed. Skipping migration step. for repo jenkins-test"
+//                             }
+                        
+                        
+//                     } else if (REPO_NAME == "jenkins-test2") {
+//                         echo "Executing action for jenkins-test2"
+
+//                     } else {
+//                         error "Unknown repository!"
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+
 pipeline {
     agent any
 
-    environment {
-        GIT_URL = "${scm.getUserRemoteConfigs()[0].getUrl()}" // Fetch repo URL
-        REPO_NAME = "${GIT_URL.replaceFirst(/^.*\/([^\/]+?)(\.git)?$/, '$1')}" // Extract repo name
-        BRANCH_NAME = "${env.GIT_BRANCH}" // Extract branch name
-    }
-
     stages {
-        stage('Print Incoming Webhook Data') {
-            steps {
-                 script {
-                    echo "🔹 Printing Environment Variables:"
-                    sh 'env | sort'
-
-                    echo "🔹 Extracted Repository Name: ${REPO_NAME}"
-                    echo "🔹 Extracted Branch Name: ${BRANCH_NAME}"
-
-                    // Print webhook payload if using a GitHub/GitLab trigger
-                    if (env.JOB_NAME) {
-                        // sh "curl -s ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json"
-                        echo "🔹 Job Name: ${env.JOB_NAME}"
-                    } else {
-                        echo "❌ JOB_NAME is not set. Ensure the webhook is triggering the job correctly."
-                    }
-                }
-            }
-        }
-            
         stage('Checkout') {
             steps {
                 checkout scm
                 script {
-                    echo "Triggered by repository: ${REPO_NAME}"
-                    echo "Branch: ${BRANCH_NAME}"
+                    def gitUrl = sh(script: "git config --get remote.origin.url", returnStdout: true).trim()
+                    env.REPO_NAME = gitUrl.replaceFirst(/^.*\/([^\/]+?)(\.git)?$/, '$1')
+
+                    def branchName = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+                    env.BRANCH_NAME = branchName
+
+                    echo "🔹 Extracted Repository Name: ${env.REPO_NAME}"
+                    echo "🔹 Extracted Branch Name: ${env.BRANCH_NAME}"
                 }
             }
         }
@@ -41,15 +123,14 @@ pipeline {
         stage('Validate Triggering Branch') {
             steps {
                 script {
-                    // Define allowed branches per repository (any branch that contains 'main')
                     def allowedBranches = [
                         "jenkins-test"  : ~/.*main.*/,
                         "jenkins-test2" : ~/.*main.*/,
                         "jenkins-test3" : ~/.*main.*/
                     ]
                     
-                    if (!allowedBranches.containsKey(REPO_NAME) || !(BRANCH_NAME in allowedBranches[REPO_NAME])) {
-                        echo "Skipping pipeline execution for repo: ${REPO_NAME}, branch: ${BRANCH_NAME}"
+                    if (!allowedBranches.containsKey(env.REPO_NAME) || !(env.BRANCH_NAME in allowedBranches[env.REPO_NAME])) {
+                        echo "Skipping pipeline execution for repo: ${env.REPO_NAME}, branch: ${env.BRANCH_NAME}"
                         currentBuild.result = 'ABORTED'
                         error "This branch is not allowed to trigger the pipeline."
                     }
@@ -57,37 +138,46 @@ pipeline {
             }
         }
 
+        stage('Find Latest Changed Repo') {
+            steps {
+                script {
+                    def lastCommitterRepo = sh(script: "git log -1 --pretty=format:'%H %s' --name-only", returnStdout: true).trim()
+                    echo "🔹 Latest changes from repo: ${env.REPO_NAME}"
+                    echo "🔹 Latest commit details: ${lastCommitterRepo}"
+                }
+            }
+        }
 
         stage('Execute Actions Based on Repo') {
             steps {
                 script {
-                    if (REPO_NAME == "jenkins-test3") {
+                    if (env.REPO_NAME == "jenkins-test3") {
                         echo "Executing action for jenkins-test3"
 
                         def changes = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
-                            def hasMigrations = changes.split('\n').any { it =~ /\/migrations\// }
+                        def hasMigrations = changes.split('\n').any { it =~ /\/migrations\// }
 
-                            if (hasMigrations) {
-                                echo "Migration files changed! Running necessary actions..."
-                                // Trigger database migration or any other necessary action
-                            } else {
-                                echo "No migration files changed. Skipping migration step. for repo jenkins-test3"
-                            }
+                        if (hasMigrations) {
+                            echo "Migration files changed! Running necessary actions..."
+                            // Run migration steps here
+                        } else {
+                            echo "No migration files changed. Skipping migration step for jenkins-test3."
+                        }
 
-                    } else if (REPO_NAME == "jenkins-test") {
+                    } else if (env.REPO_NAME == "jenkins-test") {
                         echo "Executing action for jenkins-test"
-                        def changes = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
-                            def hasMigrations = changes.split('\n').any { it =~ /\/migrations\// }
 
-                            if (hasMigrations) {
-                                echo "Migration files changed! Running necessary actions..."
-                                // Trigger database migration or any other necessary action
-                            } else {
-                                echo "No migration files changed. Skipping migration step. for repo jenkins-test"
-                            }
-                        
-                        
-                    } else if (REPO_NAME == "jenkins-test2") {
+                        def changes = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
+                        def hasMigrations = changes.split('\n').any { it =~ /\/migrations\// }
+
+                        if (hasMigrations) {
+                            echo "Migration files changed! Running necessary actions..."
+                            // Run migration steps here
+                        } else {
+                            echo "No migration files changed. Skipping migration step for jenkins-test."
+                        }
+
+                    } else if (env.REPO_NAME == "jenkins-test2") {
                         echo "Executing action for jenkins-test2"
 
                     } else {
