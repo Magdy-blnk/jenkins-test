@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    environment {
+        REPO_NAME = "${GIT_URL.split('/').last().replace('.git', '')}"
+        BRANCH_NAME = "${env.GIT_BRANCH}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    echo "Triggered by repository: ${REPO_NAME}"
+                    echo "Branch: ${BRANCH_NAME}"
+                }
+            }
+        }
+
+        stage('Validate Triggering Branch') {
+            steps {
+                script {
+                    def allowedBranches = [
+                        "repo1": ["main", "dev"],
+                        "repo2": ["develop"],
+                        "repo3": ["staging"]
+                    ]
+                    
+                    if (!allowedBranches.containsKey(REPO_NAME) || !(BRANCH_NAME in allowedBranches[REPO_NAME])) {
+                        echo "Skipping pipeline execution for repo: ${REPO_NAME}, branch: ${BRANCH_NAME}"
+                        currentBuild.result = 'ABORTED'
+                        error "This branch is not allowed to trigger the pipeline."
+                    }
+                }
+            }
+        }
+
+        stage('Execute Actions Based on Repo') {
+            steps {
+                script {
+                    if (REPO_NAME == "repo1") {
+                        echo "Executing action for Repo 1"
+                        sh "./scripts/repo1_action.sh"
+                    } else if (REPO_NAME == "repo2") {
+                        echo "Executing action for Repo 2"
+                        sh "./scripts/repo2_action.sh"
+                    } else if (REPO_NAME == "repo3") {
+                        echo "Executing action for Repo 3"
+                        sh "./scripts/repo3_action.sh"
+                    } else {
+                        error "Unknown repository!"
+                    }
+                }
+            }
+        }
+    }
+}
