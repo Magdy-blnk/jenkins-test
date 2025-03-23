@@ -8,21 +8,21 @@ pipeline {
 
     stages {
 
-        stage('Print Incoming Webhook Data') {
-            steps {
-                script {
-                    echo "🔹 Printing Environment Variables:"
-                    sh 'env | sort'
+        // stage('Print Incoming Webhook Data') {
+        //     steps {
+        //         script {
+        //             echo "🔹 Printing Environment Variables:"
+        //             sh 'env | sort'
 
-                    echo "🔹 Printing Raw Webhook Payload:"
-                    if (env.JOB_NAME) {
-                        sh "curl -s -X GET ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json | jq ."
-                    } else {
-                        echo "JOB_NAME is not set. Ensure the webhook is triggering the job correctly."
-                    }
-                }
-            }
-        }
+        //             echo "🔹 Printing Raw Webhook Payload:"
+        //             if (env.JOB_NAME) {
+        //                 sh "curl -s -X GET ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json | jq ."
+        //             } else {
+        //                 echo "JOB_NAME is not set. Ensure the webhook is triggering the job correctly."
+        //             }
+        //         }
+        //     }
+        // }
         stage('Checkout') {
             steps {
                 checkout scm
