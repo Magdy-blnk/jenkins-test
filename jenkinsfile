@@ -10,26 +10,20 @@ pipeline {
     stages {
         stage('Print Incoming Webhook Data') {
             steps {
-                script {
-                    // Fetch Webhook Payload (GitHub/Bitbucket/GitLab)
-                    def payload = sh(script: "curl -s ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json", returnStdout: true).trim()
-                    echo "🔹 Webhook Payload: ${payload}"
+                 script {
+                    echo "🔹 Printing Environment Variables:"
+                    sh 'env | sort'
 
-                    // Parse JSON and extract repository URL & branch
-                    def json = readJSON(text: payload)
-                    def repoFullName = json?.actions?.find { it._class == "hudson.plugins.git.util.BuildData" }?.remoteUrls[0] ?: "unknown"
-                    def branchName = json?.actions?.find { it._class == "hudson.plugins.git.util.BuildData" }?.lastBuiltRevision?.branch[0]?.name ?: "main"
+                    echo "🔹 Extracted Repository Name: ${REPO_NAME}"
+                    echo "🔹 Extracted Branch Name: ${BRANCH_NAME}"
 
-                    // Extract repo name
-                    def repoName = repoFullName.tokenize('/').last().replace('.git', '')
-
-                    // Store extracted values in environment variables
-                    env.REPO_NAME = repoName
-                    env.GIT_URL = repoFullName
-                    env.BRANCH_NAME = branchName
-
-                    echo "✅ Extracted Repository: ${env.REPO_NAME}"
-                    echo "✅ Extracted Branch: ${env.BRANCH_NAME}"
+                    // Print webhook payload if using a GitHub/GitLab trigger
+                    if (env.JOB_NAME) {
+                        // sh "curl -s ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json"
+                        echo "🔹 Job Name: ${env.JOB_NAME}"
+                    } else {
+                        echo "❌ JOB_NAME is not set. Ensure the webhook is triggering the job correctly."
+                    }
                 }
             }
         }
