@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        REPO_NAME = "${GIT_URL.split('/').last().replace('.git', '')}"
-        BRANCH_NAME = "${env.GIT_BRANCH}"
+        GIT_URL = "${scm.getUserRemoteConfigs()[0].getUrl()}" // Fetch repo URL
+        REPO_NAME = "${GIT_URL.tokenize('/').last().replace('.git', '')}" // Extract repo name
+        BRANCH_NAME = "${env.GIT_BRANCH}" // Extract branch name
     }
 
     stages {
