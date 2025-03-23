@@ -112,7 +112,7 @@ pipeline {
                     env.REPO_NAME = gitUrl.replaceFirst(/^.*\/([^\/]+?)(\.git)?$/, '$1')
 
                     def branchName = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
-                    env.BRANCH_NAME = : "main"
+                    env.BRANCH_NAME = "main"
 
                     echo "🔹 Extracted Repository Name: ${env.REPO_NAME}"
                     echo "🔹 Extracted Branch Name: ${env.REPO_NAME}"
