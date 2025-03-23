@@ -38,15 +38,16 @@ pipeline {
         stage('Execute Actions Based on Repo') {
             steps {
                 script {
-                    if (REPO_NAME == "repo1") {
-                        echo "Executing action for Repo 1"
-                        sh "./scripts/repo1_action.sh"
-                    } else if (REPO_NAME == "repo2") {
-                        echo "Executing action for Repo 2"
-                        sh "./scripts/repo2_action.sh"
-                    } else if (REPO_NAME == "repo3") {
-                        echo "Executing action for Repo 3"
-                        sh "./scripts/repo3_action.sh"
+                    if (REPO_NAME == "jenkins-test3") {
+                        echo "Executing action for jenkins-test3"
+
+                    } else if (REPO_NAME == "jenkins-test") {
+                        echo "Executing action for jenkins-test"
+                        
+                        
+                    } else if (REPO_NAME == "jenkins-test2") {
+                        echo "Executing action for jenkins-test2"
+
                     } else {
                         error "Unknown repository!"
                     }
