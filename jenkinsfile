@@ -7,8 +7,8 @@ pipeline {
         BRANCH_NAME = "${env.GIT_BRANCH}" // Extract branch name
     }
 
-    
-        stage('Extract Triggering Repository') {
+    stages {
+        stage('Print Incoming Webhook Data') {
             steps {
                 script {
                     // Fetch Webhook Payload (GitHub/Bitbucket/GitLab)
@@ -32,6 +32,7 @@ pipeline {
                     echo "✅ Extracted Branch: ${env.BRANCH_NAME}"
                 }
             }
+        }
             
         stage('Checkout') {
             steps {
