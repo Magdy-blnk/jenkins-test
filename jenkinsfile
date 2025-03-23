@@ -18,7 +18,7 @@ pipeline {
 
                     // Print webhook payload if using a GitHub/GitLab trigger
                     if (env.JOB_NAME) {
-                        sh "curl -s ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json | jq ."
+                        sh "curl -s ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json"
                     } else {
                         echo "❌ JOB_NAME is not set. Ensure the webhook is triggering the job correctly."
                     }
