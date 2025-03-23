@@ -28,22 +28,15 @@ pipeline {
             }
         }
             
-stage('Checkout') {
-    steps {
-        script {
-            // Ensure the correct repository and branch are checked out
-            checkout([
-                $class: 'GitSCM',
-                branches: [[name: BRANCH_NAME]], // Use the triggering branch
-                extensions: [],
-                userRemoteConfigs: [[url: GIT_URL]] // Use the triggering repository URL
-            ])
-
-            echo "Triggered by repository: ${REPO_NAME}"
-            echo "Branch: ${BRANCH_NAME}"
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    echo "Triggered by repository: ${REPO_NAME}"
+                    echo "Branch: ${BRANCH_NAME}"
+                }
+            }
         }
-    }
-}
 
         stage('Validate Triggering Branch') {
             steps {
