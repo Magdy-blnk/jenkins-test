@@ -57,6 +57,15 @@ pipeline {
                 script {
                     if (REPO_NAME == "jenkins-test3") {
                         echo "Executing action for jenkins-test3"
+                        def changes = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
+                            def hasMigrations = changes.split('\n').any { it =~ /\/migrations\// }
+
+                            if (hasMigrations) {
+                                echo "Migration files changed! Running necessary actions..."
+                                // Trigger database migration or any other necessary action
+                            } else {
+                                echo "No migration files changed. Skipping migration step."
+                            }
 
                     } else if (REPO_NAME == "jenkins-test") {
                         echo "Executing action for jenkins-test"
