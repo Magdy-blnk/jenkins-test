@@ -30,10 +30,14 @@ pipeline {
             
         stage('Checkout') {
             steps {
-                checkout scm
-                script {
-                    echo "Triggered by repository: ${REPO_NAME}"
-                    echo "Branch: ${BRANCH_NAME}"
+               script {
+                    echo "✅ Checking out repository: ${REPO_NAME} on branch ${BRANCH_NAME}"
+                    
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: BRANCH_NAME]],
+                        userRemoteConfigs: [[url: GIT_REMOTE_URL]]
+                    ])
                 }
             }
         }
