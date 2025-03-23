@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GIT_URL = "${scm.getUserRemoteConfigs()[0].getUrl()}" // Fetch repo URL
-        REPO_NAME = "${GIT_URL.tokenize('/').last().replace('.git', '')}" // Extract repo name
+        REPO_NAME = "${GIT_URL.replaceFirst(/^.*\/([^\/]+?)(\.git)?$/, '$1')}" // Extract repo name
         BRANCH_NAME = "${env.GIT_BRANCH}" // Extract branch name
     }
 
