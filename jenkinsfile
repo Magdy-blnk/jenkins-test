@@ -20,10 +20,11 @@ pipeline {
         stage('Validate Triggering Branch') {
             steps {
                 script {
+                    // Define allowed branches per repository (any branch that contains 'main')
                     def allowedBranches = [
-                        "repo1": ["origin1/main", "dev"],
-                        "repo2": ["origin1/main"],
-                        "repo3": ["origin1/main"]
+                        "jenkins-test"  : ~/.*main.*/,
+                        "jenkins-test2" : ~/.*main.*/,
+                        "jenkins-test3" : ~/.*main.*/
                     ]
                     
                     if (!allowedBranches.containsKey(REPO_NAME) || !(BRANCH_NAME in allowedBranches[REPO_NAME])) {
