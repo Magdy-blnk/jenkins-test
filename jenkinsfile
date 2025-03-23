@@ -7,18 +7,20 @@ pipeline {
     }
 
     stages {
-
         stage('Print Incoming Webhook Data') {
             steps {
-                script {
+                 script {
                     echo "🔹 Printing Environment Variables:"
                     sh 'env | sort'
 
-                    echo "🔹 Printing Raw Webhook Payload:"
+                    echo "🔹 Extracted Repository Name: ${REPO_NAME}"
+                    echo "🔹 Extracted Branch Name: ${BRANCH_NAME}"
+
+                    // Print webhook payload if using a GitHub/GitLab trigger
                     if (env.JOB_NAME) {
-                        sh "curl -s -X GET ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json"
+                        sh "curl -s ${env.JENKINS_URL}/job/${env.JOB_NAME}/lastBuild/api/json | jq ."
                     } else {
-                        echo "JOB_NAME is not set. Ensure the webhook is triggering the job correctly."
+                        echo "❌ JOB_NAME is not set. Ensure the webhook is triggering the job correctly."
                     }
                 }
             }
