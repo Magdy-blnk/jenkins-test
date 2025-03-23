@@ -115,7 +115,7 @@ pipeline {
                     env.BRANCH_NAME = branchName
 
                     echo "🔹 Extracted Repository Name: ${env.REPO_NAME}"
-                    echo "🔹 Extracted Branch Name: ${env.BRANCH_NAME}"
+                    echo "🔹 Extracted Branch Name: main"
                 }
             }
         }
